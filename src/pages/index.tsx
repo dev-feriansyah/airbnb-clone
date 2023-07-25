@@ -4,6 +4,7 @@ import { Icon } from '@/components/atoms'
 import { cva } from 'class-variance-authority'
 import { type IconName } from '@/components/atoms/Icon'
 import { useState } from 'react'
+import { type RouterOutputs, api } from '@/utils/api'
 
 const HomeHeader = () => {
   return (
@@ -95,37 +96,46 @@ const HomeFilter = () => {
   )
 }
 
-const HomeRoomCard = () => {
-  const room = {
-    id: '1',
-    city: 'Kediri',
-    country: 'Indonesia',
-    distance: '949 kilometers away',
-    availableDate: 'Sep 12 - 14',
-    price: 'Rp1,734,118',
-    priceUnit: 'night',
-  }
+type Room = RouterOutputs['rooms']['getAll'][number]
+const HomeRoomCard = ({ room }: { room: Room }) => {
   return (
     <Link href="#">
       <div className="relative mb-2 h-72 w-full">
         <Image
-          src="https://dummyimage.com/440x440/c7bbc0/fff"
+          src={room.imageUrl}
           fill
           alt="Tiny Homes"
           className="rounded-xl"
         />
       </div>
       <div className="flex flex-col gap-1 text-xs text-primary">
-        <h5 className="font-semibold">
+        <h5 className="font-semibold capitalize">
           {room.city}, {room.country}
         </h5>
         <span className="text-muted-foreground">{room.distance}</span>
-        <span className="text-muted-foreground">{room.availableDate}</span>
+        <span className="capitalize text-muted-foreground">
+          {room.availableDate}
+        </span>
         <span className="mt-1 font-semibold">
           {room.price} <span>{room.priceUnit}</span>
         </span>
       </div>
     </Link>
+  )
+}
+
+const HomeRoomCards = () => {
+  const { data: rooms, isLoading } = api.rooms.getAll.useQuery()
+
+  if (isLoading) return <div>Loading...</div>
+  if (!rooms) return <div>Something went wrong</div>
+
+  return (
+    <>
+      {rooms.map((room) => (
+        <HomeRoomCard key={room.id} room={room} />
+      ))}
+    </>
   )
 }
 
@@ -136,12 +146,7 @@ export default function Home() {
       <main className="container flex-grow">
         <HomeFilter />
         <section className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <HomeRoomCard />
-          <HomeRoomCard />
-          <HomeRoomCard />
-          <HomeRoomCard />
-          <HomeRoomCard />
-          <HomeRoomCard />
+          <HomeRoomCards />
         </section>
       </main>
       <HomeFooter />
