@@ -5,6 +5,8 @@ import { cva } from 'class-variance-authority'
 import { type IconName } from '@/components/atoms/Icon'
 import { useState } from 'react'
 import { type RouterOutputs, api } from '@/utils/api'
+import { generateSSGHelper } from '@/server/helper'
+import { type GetStaticProps } from 'next'
 
 const HomeHeader = () => {
   return (
@@ -125,9 +127,8 @@ const HomeRoomCard = ({ room }: { room: Room }) => {
 }
 
 const HomeRoomCards = () => {
-  const { data: rooms, isLoading } = api.rooms.getAll.useQuery()
+  const { data: rooms } = api.rooms.getAll.useQuery()
 
-  if (isLoading) return <div>Loading...</div>
   if (!rooms) return <div>Something went wrong</div>
 
   return (
@@ -152,4 +153,17 @@ export default function Home() {
       <HomeFooter />
     </div>
   )
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const ssg = generateSSGHelper()
+
+  await ssg.rooms.getAll.prefetch()
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    },
+    revalidate: 600, // 10 minutes
+  }
 }
