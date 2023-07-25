@@ -19,7 +19,14 @@ const config = {
     defaultLocale: 'en',
   },
   images: {
-    domains: ['dummyimage.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'dummyimage.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,
